@@ -38,3 +38,18 @@ def generate_text(topic):
 
     except Exception as e:
         return "❌ Ошибка запроса к ИИ"
+
+response = requests.post(
+    API_URL,
+    headers=headers,
+    json={
+        "inputs": prompt,
+        "parameters": {
+            "max_new_tokens": 200,
+            "temperature": 0.7
+        }
+    },
+    timeout=30
+)
+
+print(response.json())  # 👈 ВАЖНО
