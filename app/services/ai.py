@@ -1,4 +1,5 @@
 import requests
+import time
 from config import HF_TOKEN
 from app.data.prompts import PROMPTS
 
@@ -12,44 +13,38 @@ headers = {
 def generate_text(topic):
     prompt = PROMPTS[topic]
 
-    try:
-        response = requests.post(
-            API_URL,
-            headers=headers,
-            json={
-                "inputs": prompt,
-                "parameters": {
-                    "max_new_tokens": 200,
-                    "temperature": 0.7
-                }
-            },
-            timeout=30
-        )
+    for _ in range(3):  # retry
+        try:
+            response = requests.post(
+                API_URL,
+                headers=headers,
+                json={
+                    "inputs": prompt,
+                    "parameters": {
+                        "max_new_tokens": 200,
+                        "temperature": 0.7
+                    }
+                },
+                timeout=30
+            )
 
-        data = response.json()
+            data = response.json()
+            print("HF RESPONSE:", data)  # 👈 лог
 
-        if isinstance(data, list):
-            text = data[0]["generated_text"]
-        else:
-            return "❌ Ошибка генерации"
+            # ✅ если норм ответ
+            if isinstance(data, list):
+                text = data[0]["generated_text"]
+                return text.replace(prompt, "").strip()
 
-        # чистим prompt из ответа (HF часто возвращает его вместе)
-        return text.replace(prompt, "").strip()
+            # ❌ если модель грузится
+            if "loading" in str(data).lower():
+                time.sleep(5)
+                continue
 
-    except Exception as e:
-        return "❌ Ошибка запроса к ИИ"
+            # ❌ другая ошибка
+            return f"❌ HF ошибка: {data}"
 
-response = requests.post(
-    API_URL,
-    headers=headers,
-    json={
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 200,
-            "temperature": 0.7
-        }
-    },
-    timeout=30
-)
+        except Exception as e:
+            return f"❌ Ошибка запроса: {e}"
 
-print(response.json())  # 👈 ВАЖНО
+    return "❌ Модель не загрузилась"
