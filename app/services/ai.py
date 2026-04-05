@@ -3,7 +3,7 @@ import time
 from config import HF_TOKEN
 from app.data.prompts import PROMPTS
 
-API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct"
+API_URL = "https://router.huggingface.co/api/models/mistralai/Mistral-7B-Instruct"
 
 headers = {
     "Authorization": f"Bearer {HF_TOKEN}"
