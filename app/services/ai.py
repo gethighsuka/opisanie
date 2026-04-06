@@ -11,6 +11,7 @@ headers = {
 
 
 def generate_text(topic):
+    print("KEY:", GROQ_API_KEY)
     prompt = PROMPTS[topic]
 
     try:
